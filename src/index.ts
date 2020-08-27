@@ -69,16 +69,16 @@ class iSmartGateSwitch implements AccessoryPlugin {
     const url: string = 'http://' + this.hostname + '/index.php';
 
     try {
-	    axios.post(url, {
-	    	'login': this.username,
-	    	'pass': this.password,
-	    	'send-login': 'Sign in',
-	    }).then((response) => {
-	    	this.requestResponse = response.headers;
-	    	log.info('Login Successful');
-	    });
+		axios.post(url, {
+			'login': this.username,
+			'pass': this.password,
+			'send-login': 'Sign in',
+		}).then((response) => {
+			this.requestResponse = response.headers;
+			log.info('Login Successful');
+		});
     } catch (exception) {
-	    process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
+		process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
     }
 
     this.switchService = new hap.Service.Switch(this.name);
@@ -90,24 +90,24 @@ class iSmartGateSwitch implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.switchOn = value as boolean;
         if (this.switchOn) {
-        		try {
-				    axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=0', {
-				    	headers: this.requestResponse,
-				    }).then((response) => {
-				    	log.info('Light On');
-				    });
+				try {
+					axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=0', {
+						headers: this.requestResponse,
+					}).then((response) => {
+						log.info('Light On');
+					});
           } catch (exception) {
-				    process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
+					process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
           }
         } else {
-        	try {
-			    axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=1', {
-			    	headers: this.requestResponse,
-			    }).then((response) => {
-			    	log.info('Light Off');
-			    });
+			try {
+				axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=1', {
+					headers: this.requestResponse,
+				}).then((response) => {
+					log.info('Light Off');
+				});
           } catch (exception) {
-			    process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
+				process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
           }
         }
         

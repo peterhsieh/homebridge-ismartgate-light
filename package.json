@@ -1,5 +1,4 @@
 {
-  "private": true,
   "displayName": "iSmartGate Light",
   "name": "homebridge-ismartgate-light",
   "version": "0.0.1",
