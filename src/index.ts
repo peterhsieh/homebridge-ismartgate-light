@@ -95,9 +95,8 @@ class iSmartGateSwitch implements AccessoryPlugin {
         this.switchOn = value as boolean;
         if (this.switchOn) {
 				try {
-					axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, {
-						headers: this.requestResponse,
-					}).then((response) => {
+					axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=0&webtoken='+this.webtoken).then((response) => {
+						log.info('http://'+ this.hostname +'/isg/light.php?op=activate&light=0&webtoken='+this.webtoken)
 						log.info(response.data);
 						log.info('Light On');
 					});
@@ -106,9 +105,8 @@ class iSmartGateSwitch implements AccessoryPlugin {
           }
         } else {
 			try {
-				axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, {
-					headers: this.requestResponse,
-				}).then((response) => {
+				axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=1&webtoken='+this.webtoken).then((response) => {
+					log.info('http://'+ this.hostname +'/isg/light.php?op=activate&light=1&webtoken='+this.webtoken)
 					log.info(response.data);
 					log.info('Light Off');
 				});
