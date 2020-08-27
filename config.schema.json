@@ -9,7 +9,10 @@
         "title": "Accessory Name",
         "type": "string",
         "required": true,
-        "default": "iSmartGate Light"
+        "default": "iSmartGate Light",
+        "description":"The name of your device to show in the Home app",
+             "minLength": 1,
+             "required": true
       },
       "hostname":{
          "title":"iSmartGate Hostname",
@@ -37,36 +40,14 @@
         "minLength": 1,
         "required": true
      },
+     "webtoken":{
+        "title":"Web Token",
+        "type":"string",
+        "format":"string",
+        "description": "Get from the Light function code (Web Inspector)",
+        "minLength": 1,
+        "required": false
+     }
     }
-  },
-  "layout":[
-       {
-          "type":"flex",
-          "flex-flow":"row wrap",
-          "items":[
-              {
-                 "key":"name",
-                 "type":"string"
-              },
-              {
-                 "key":"hostname",
-                 "type":"string"
-              }
-          ]
-       },
-      {
-         "type":"flex",
-         "flex-flow":"row wrap",
-         "items":[
-            {
-               "key":"username",
-               "type":"string"
-            },
-            {
-               "key":"password",
-               "type":"password"
-            }
-         ]
-      }
-   ]
+  }
 }

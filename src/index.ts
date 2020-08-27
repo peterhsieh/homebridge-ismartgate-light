@@ -52,6 +52,7 @@ class iSmartGateSwitch implements AccessoryPlugin {
   private readonly hostname: string;
   private readonly username: string;
   private readonly password: string;
+  private readonly webtoken: string;
   private requestResponse: any;
   private switchOn = false;
 
@@ -64,6 +65,7 @@ class iSmartGateSwitch implements AccessoryPlugin {
     this.hostname = config.hostname;
     this.username = config.username;
     this.password = config.password;
+    this.webtoken = config.webtoken;
     this.requestResponse = '';
 
     const url: string = 'http://' + this.hostname + '/index.php';
@@ -73,8 +75,10 @@ class iSmartGateSwitch implements AccessoryPlugin {
 			'login': this.username,
 			'pass': this.password,
 			'send-login': 'Sign in',
+			'sesion-abierta': 1
 		}).then((response) => {
 			this.requestResponse = response.headers;
+			log.info(response.headers);
 			log.info('Login Successful');
 		});
     } catch (exception) {
@@ -91,7 +95,7 @@ class iSmartGateSwitch implements AccessoryPlugin {
         this.switchOn = value as boolean;
         if (this.switchOn) {
 				try {
-					axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=0', {
+					axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, {
 						headers: this.requestResponse,
 					}).then((response) => {
 						log.info(response.data);
@@ -102,7 +106,7 @@ class iSmartGateSwitch implements AccessoryPlugin {
           }
         } else {
 			try {
-				axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=1', {
+				axios.get('http://'+ this.hostname +'/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, {
 					headers: this.requestResponse,
 				}).then((response) => {
 					log.info(response.data);

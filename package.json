@@ -1,7 +1,7 @@
 {
   "displayName": "iSmartGate Light",
   "name": "homebridge-ismartgate-light",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Exposes the iSmartGate hub light to Homebridge.",
   "license": "MIT",
   "repository": {
