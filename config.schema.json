@@ -1,16 +1,72 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
-  "pluginType": "platform",
+  "pluginAlias": "iSmartGate Light",
+  "pluginType": "accessory",
   "singular": true,
   "schema": {
     "type": "object",
     "properties": {
       "name": {
-        "title": "Name",
+        "title": "Accessory Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
-      }
+        "default": "iSmartGate Light"
+      },
+      "hostname":{
+         "title":"iSmartGate Hostname",
+         "type":"string",
+         "format":"string",
+         "placeholder":"ismartgate",
+         "description":"The hostname of your device (e.g. ismartgate.local) or the IP address (e.g. 192.168.1.32)",
+         "minLength": 1,
+         "required": true
+      },
+      "username":{
+         "title":"Username",
+         "type":"string",
+         "format":"string",
+         "placeholder":"admin",
+         "description": "Default: admin",
+         "minLength": 1,
+         "required": true
+      },
+     "password":{
+        "title":"Password",
+        "type":"string",
+        "format":"password",
+        "description": "Configured during device setup",
+        "minLength": 1,
+        "required": true
+     },
     }
-  }
+  },
+  "layout":[
+       {
+          "type":"flex",
+          "flex-flow":"row wrap",
+          "items":[
+              {
+                 "key":"name",
+                 "type":"string"
+              },
+              {
+                 "key":"hostname",
+                 "type":"string"
+              }
+          ]
+       },
+      {
+         "type":"flex",
+         "flex-flow":"row wrap",
+         "items":[
+            {
+               "key":"username",
+               "type":"string"
+            },
+            {
+               "key":"password",
+               "type":"password"
+            }
+         ]
+      }
+   ]
 }
