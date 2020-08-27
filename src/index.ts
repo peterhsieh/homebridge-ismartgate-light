@@ -69,7 +69,8 @@ class iSmartGateSwitch implements AccessoryPlugin {
     this.requestResponse = '';
 
     const url: string = 'http://' + this.hostname + '/index.php';
-    const lightUrl: string = 'http://' + this.hostname + '/isg/light.php';
+    const lightOnUrl: string = 'http://' + this.hostname + '/isg/light.php?op=activate&light=0&webtoken='+ this.webtoken;
+    const lightOffUrl: string = 'http://' + this.hostname + '/isg/light.php?op=activate&light=1&webtoken='+ this.webtoken;
 
     try {
 		axios.post(url, {
@@ -96,25 +97,17 @@ class iSmartGateSwitch implements AccessoryPlugin {
         this.switchOn = value as boolean;
         if (this.switchOn) {
 				try {
-					axios.post(lightUrl, {
-						'op': 'activate',
-						'light': 0,
-						'webtoken': this.webtoken 
-					}).then((response) => {
+					axios.get(lightOnUrl).then((response) => {
 					log.info('REQUEST:'+response.request);
 					log.info('RESPONSE:'+response.data);
-						log.info('Light On');
+					log.info('Light On');
 					});
           } catch (exception) {
 					process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
           }
         } else {
 			try {
-				axios.post(lightUrl, {
-						'op': 'activate',
-						'light': 1,
-						'webtoken': this.webtoken 
-					}).then((response) => {
+				axios.get(lightOffUrl).then((response) => {
 					log.info('REQUEST:'+response.request);
 					log.info('RESPONSE:'+response.data);
 					log.info('Light Off');
