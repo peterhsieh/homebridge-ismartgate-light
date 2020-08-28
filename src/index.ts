@@ -36,6 +36,12 @@ import {
 let hap: HAP;
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import cheerio = require('cheerio');
+import qs = require('qs');
+import tough = require('tough-cookie');
+import axiosCookieJarSupport from 'axios-cookiejar-support';
+
+axiosCookieJarSupport(axios);
 
 /*
  * Initializer function called when the plugin is loaded.
@@ -52,9 +58,9 @@ class iSmartGateSwitch implements AccessoryPlugin {
   private readonly hostname: string;
   private readonly username: string;
   private readonly password: string;
-  private readonly webtoken: string;
-  private requestResponse: any;
+  private webtoken: string;
   private switchOn = false;
+  private cookieJar = new tough.CookieJar();
 
   private readonly switchService: Service;
   private readonly informationService: Service;
@@ -65,25 +71,9 @@ class iSmartGateSwitch implements AccessoryPlugin {
     this.hostname = config.hostname;
     this.username = config.username;
     this.password = config.password;
-    this.webtoken = config.webtoken;
-    this.requestResponse = '';
+    this.webtoken = "";
 
-    const url: string = 'http://' + this.hostname + '/index.php';
-
-    try {
-		axios.post(url, {
-			'login': this.username,
-			'pass': this.password,
-			'send-login': 'Sign in',
-			'sesion-abierta': 1
-		}).then((response) => {
-			this.requestResponse = response.headers;
-			log.info(response.headers);
-			log.info('Login Successful');
-		});
-    } catch (exception) {
-		process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
-    }
+    this.login();
 
     this.switchService = new hap.Service.Switch(this.name);
     this.switchService.getCharacteristic(hap.Characteristic.On)
@@ -94,25 +84,11 @@ class iSmartGateSwitch implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.switchOn = value as boolean;
         if (this.switchOn) {
-				try {
-					axios.get('http://ismartgate.home/isg/light.php?op=activate&light=0&webtoken=abadc888f31b1140497949394f7464497366746f56304c6e2f4f6f753075704250386e30625a6a4661644443366474434950303d').then((response) => {
-					log.info('REQUEST:'+response.request);
-					log.info('RESPONSE:'+response.data);
-					log.info('Light On');
-					});
-          } catch (exception) {
-					process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
-          }
+        	this.lightOn();
+			log.info('Light On');
         } else {
-			try {
-				axios.get('http://ismartgate.home/isg/light.php?op=activate&light=1&webtoken=abadc888f31b1140497949394f7464497366746f56304c6e2f4f6f753075704250386e30625a6a4661644443366474434950303d').then((response) => {
-					log.info('REQUEST:'+response.request);
-					log.info('RESPONSE:'+response.data);
-					log.info('Light Off');
-				});
-          } catch (exception) {
-				process.stderr.write(`ERROR received from ${url}: ${exception}\n`);
-          }
+        	this.lightOff();
+			log.info('Light Off');
         }
         
         log.info('Switch state was set to: ' + (this.switchOn? 'ON': 'OFF'));
@@ -124,6 +100,69 @@ class iSmartGateSwitch implements AccessoryPlugin {
       .setCharacteristic(hap.Characteristic.Model, 'Pro');
 
     log.info('Switch finished initializing!');
+  }
+
+  async login () {
+	const url: string = 'http://' + this.hostname + '/index.php';
+    const data = {
+		login: this.username,
+		pass: this.password,
+		'send-login': 'Sign in',
+		'sesion-abierta': 1
+	};
+	const config = {
+	        headers: {
+	            'Content-Type': 'application/x-www-form-urlencoded'
+	        },
+	        jar: this.cookieJar,
+	        withCredentials: true
+	    };
+	try {
+	    const res = await axios.post(url, qs.stringify(data), config);
+	    this.log.info('Login Successful');
+	    const getWebToken = await axios.get('http://ismartgate.home/index.php?op=config#light-val', config);
+	    const $ = cheerio.load(getWebToken.data)
+	    this.webtoken = $('#webtoken').val();
+	    this.log.info('Webtoken Identified');
+	} catch (err) {
+	    console.error(err);
+	}
+  }
+
+  async lightOn () {
+  	const config = {
+        jar: this.cookieJar,
+        withCredentials: true
+    };
+  	try {
+  		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
+	    	console.log(res.data);
+	    	if(res.data == "Restricted Access") {
+				this.log("Login token expired, refreshing...");
+				this.login();
+			}
+			else {this.log("Could not connect.", "Check http://" + this.hostname + " to make sure the device is still reachable & no captcha is showing.");}
+	    } catch (err) {
+	    	console.error(err);
+	    }
+  }
+
+   async lightOff () {
+  	const config = {
+        jar: this.cookieJar,
+        withCredentials: true
+    };
+  	try {
+  		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
+	    	console.log(res.data);
+	    	if(res.data == "Restricted Access") {
+				this.log("Login token expired, refreshing...");
+				this.login();
+			}
+			else {this.log("Could not connect.", "Check http://" + this.hostname + " to make sure the device is still reachable & no captcha is showing.");}
+	    } catch (err) {
+	    	console.error(err);
+	    }
   }
 
   /*
