@@ -48,10 +48,10 @@ axiosCookieJarSupport(axios);
  */
 export = (api: API) => {
   hap = api.hap;
-  api.registerAccessory('iSmartGate Light', iSmartGateSwitch);
+  api.registerAccessory('iSmartGate Light', iSmartGateLight);
 };
 
-class iSmartGateSwitch implements AccessoryPlugin {
+class iSmartGateLight implements AccessoryPlugin {
 
   private readonly log: Logging;
   private readonly name: string;
@@ -59,10 +59,10 @@ class iSmartGateSwitch implements AccessoryPlugin {
   private readonly username: string;
   private readonly password: string;
   private webtoken: string;
-  private switchOn = false;
+  private lightOn = false;
   private cookieJar = new tough.CookieJar();
 
-  private readonly switchService: Service;
+  private readonly lightService: Service;
   private readonly informationService: Service;
 
   constructor(log: Logging, config: AccessoryConfig, api: API) {
@@ -75,23 +75,23 @@ class iSmartGateSwitch implements AccessoryPlugin {
 
     this.login();
 
-    this.switchService = new hap.Service.Switch(this.name);
-    this.switchService.getCharacteristic(hap.Characteristic.On)
+    this.lightService = new hap.Service.Lightbulb(this.name);
+    this.lightService.getCharacteristic(hap.Characteristic.On)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        log.info('Current state of the switch was returned: ' + (this.switchOn? 'ON': 'OFF'));
-        callback(undefined, this.switchOn);
+        log.info('Current state of the light was returned: ' + (this.lightOn? 'ON': 'OFF'));
+        callback(undefined, this.lightOn);
       })
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.switchOn = value as boolean;
-        if (this.switchOn) {
-        	this.lightOn();
+        this.lightOn = value as boolean;
+        if (this.lightOn) {
+        	this.turnLightOn();
 			log.info('Light On');
         } else {
-        	this.lightOff();
+        	this.turnLightOff();
 			log.info('Light Off');
         }
         
-        log.info('Switch state was set to: ' + (this.switchOn? 'ON': 'OFF'));
+        log.info('Light state was set to: ' + (this.lightOn? 'ON': 'OFF'));
         callback();
       });
 
@@ -99,7 +99,7 @@ class iSmartGateSwitch implements AccessoryPlugin {
       .setCharacteristic(hap.Characteristic.Manufacturer, 'iSmartGate')
       .setCharacteristic(hap.Characteristic.Model, 'Pro');
 
-    log.info('Switch finished initializing!');
+    log.info('Light finished initializing!');
   }
 
   async login () {
@@ -129,37 +129,25 @@ class iSmartGateSwitch implements AccessoryPlugin {
 	}
   }
 
-  async lightOn () {
-  	const config = {
-        jar: this.cookieJar,
-        withCredentials: true
-    };
-  	try {
-  		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
-	    	console.log(res.data);
-	    	if(res.data == "Restricted Access") {
-				this.log("Login token expired, refreshing...");
-				this.login();
-			}
-			else {this.log("Could not connect.", "Check http://" + this.hostname + " to make sure the device is still reachable & no captcha is showing.");}
-	    } catch (err) {
-	    	console.error(err);
-	    }
-  }
-
-   async lightOff () {
+  async turnLightOn () {
   	const config = {
         jar: this.cookieJar,
         withCredentials: true
     };
   	try {
   		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
-	    	console.log(res.data);
-	    	if(res.data == "Restricted Access") {
-				this.log("Login token expired, refreshing...");
-				this.login();
-			}
-			else {this.log("Could not connect.", "Check http://" + this.hostname + " to make sure the device is still reachable & no captcha is showing.");}
+	    } catch (err) {
+	    	console.error(err);
+	    }
+  }
+
+   async turnLightOff () {
+  	const config = {
+        jar: this.cookieJar,
+        withCredentials: true
+    };
+  	try {
+  		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
 	    } catch (err) {
 	    	console.error(err);
 	    }
@@ -180,7 +168,7 @@ class iSmartGateSwitch implements AccessoryPlugin {
   getServices(): Service[] {
     return [
       this.informationService,
-      this.switchService,
+      this.lightService,
     ];
   }
 
