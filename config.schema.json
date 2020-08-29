@@ -39,7 +39,12 @@
         "description": "Configured during device setup",
         "minLength": 1,
         "required": true
-     }
+     },
+     "debug":{
+            "title":"Debug Mode",
+            "type":"boolean",
+            "description":"Shows additional logging (can be helpful for diagnosing issues)"
+         }
     }
   }
 }

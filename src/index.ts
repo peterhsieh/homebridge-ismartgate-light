@@ -58,6 +58,7 @@ class iSmartGateLight implements AccessoryPlugin {
   private readonly hostname: string;
   private readonly username: string;
   private readonly password: string;
+  private readonly debug: boolean;
   private webtoken: string;
   private lightOn = false;
   private cookieJar = new tough.CookieJar();
@@ -71,6 +72,7 @@ class iSmartGateLight implements AccessoryPlugin {
     this.hostname = config.hostname;
     this.username = config.username;
     this.password = config.password;
+    this.debug = config.debug || false;
     this.webtoken = "";
 
     this.login();
@@ -85,10 +87,8 @@ class iSmartGateLight implements AccessoryPlugin {
         this.lightOn = value as boolean;
         if (this.lightOn) {
         	this.turnLightOn();
-			log.info('Light On');
         } else {
         	this.turnLightOff();
-			log.info('Light Off');
         }
         
         log.info('Light state was set to: ' + (this.lightOn? 'ON': 'OFF'));
@@ -97,7 +97,8 @@ class iSmartGateLight implements AccessoryPlugin {
 
     this.informationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, 'iSmartGate')
-      .setCharacteristic(hap.Characteristic.Model, 'Pro');
+      .setCharacteristic(hap.Characteristic.SerialNumber, 'Pro')
+      .setCharacteristic(hap.Characteristic.Model, 'Created by Peter Hsieh');
 
     log.info('Light finished initializing!');
   }
@@ -135,7 +136,20 @@ class iSmartGateLight implements AccessoryPlugin {
         withCredentials: true
     };
   	try {
+  		if (this.debug) { this.log.info("Attempting to turn on Light.")}
   		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
+  		if (this.debug) { this.log.info(res.data)};
+  		if (res.data == 1) {
+  			this.log.info('Light Turned On')	
+  		} else if (res.data == "Restricted Access") {
+  			this.login().then(() => 
+  				{ 
+  					if (this.debug) { this.log.info("Login Token Expired. Refreshing Token.")}
+  					this.turnLightOn();
+  				});
+  		} else {
+  			this.log.info('Error: Light did not respond')
+  		}
 	    } catch (err) {
 	    	console.error(err);
 	    }
@@ -147,7 +161,20 @@ class iSmartGateLight implements AccessoryPlugin {
         withCredentials: true
     };
   	try {
+  		if (this.debug) { this.log.info("Attempting to turn off Light.")}
   		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
+  		if (this.debug) { this.log.info(res.data)};
+  		if (res.data == 0) {
+  			this.log.info('Light Turned Off')	
+  		} else if (res.data == "Restricted Access") {
+  			this.login().then(() => 
+  				{ 
+  					if (this.debug) { this.log.info("Login Token Expired. Refreshing Token.")}
+  					this.turnLightOff();
+  				});
+  		} else {
+  			this.log.info('Error: Light did not respond')
+  		}
 	    } catch (err) {
 	    	console.error(err);
 	    }
