@@ -121,7 +121,7 @@ class iSmartGateLight implements AccessoryPlugin {
 	try {
 	    const res = await axios.post(url, qs.stringify(data), config);
 	    this.log.info('Login Successful');
-	    const getWebToken = await axios.get('http://ismartgate.home/index.php?op=config#light-val', config);
+	    const getWebToken = await axios.get('http://' + this.hostname + '/index.php?op=config#light-val', config);
 	    const $ = cheerio.load(getWebToken.data)
 	    this.webtoken = $('#webtoken').val();
 	    this.log.info('Webtoken Identified');
@@ -137,7 +137,7 @@ class iSmartGateLight implements AccessoryPlugin {
     };
   	try {
   		if (this.debug) { this.log.info("Attempting to turn on Light.")}
-  		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
+  		const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
   		if (this.debug) { this.log.info(res.data)};
   		if (res.data == 1) {
   			this.log.info('Light Turned On')	
@@ -162,7 +162,7 @@ class iSmartGateLight implements AccessoryPlugin {
     };
   	try {
   		if (this.debug) { this.log.info("Attempting to turn off Light.")}
-  		const res = await axios.get('http://ismartgate.home/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
+  		const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
   		if (this.debug) { this.log.info(res.data)};
   		if (res.data == 0) {
   			this.log.info('Light Turned Off')	
