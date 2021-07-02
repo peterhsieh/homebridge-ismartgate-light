@@ -86,9 +86,9 @@ class iSmartGateLight implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.lightOn = value as boolean;
         if (this.lightOn) {
-        	this.turnLightOn();
+          this.turnLightOn();
         } else {
-        	this.turnLightOff();
+          this.turnLightOff();
         }
         
         log.info('Light state was set to: ' + (this.lightOn? 'ON': 'OFF'));
@@ -104,80 +104,80 @@ class iSmartGateLight implements AccessoryPlugin {
   }
 
   async login () {
-	const url: string = 'http://' + this.hostname + '/index.php';
+  const url: string = 'http://' + this.hostname + '/index.php';
     const data = {
-		login: this.username,
-		pass: this.password,
-		'send-login': 'Sign in',
-		'sesion-abierta': 1
-	};
-	const config = {
-	        headers: {
-	            'Content-Type': 'application/x-www-form-urlencoded'
-	        },
-	        jar: this.cookieJar,
-	        withCredentials: true
-	    };
-	try {
-	    const res = await axios.post(url, qs.stringify(data), config);
-	    this.log.info('Login Successful');
-	    const getWebToken = await axios.get('http://' + this.hostname + '/index.php?op=config#light-val', config);
-	    const $ = cheerio.load(getWebToken.data)
-	    this.webtoken = $('#webtoken').val();
-	    this.log.info('Webtoken Identified');
-	} catch (err) {
-	    console.error(err);
-	}
+    login: this.username,
+    pass: this.password,
+    'send-login': 'Sign in',
+    'sesion-abierta': 1
+  };
+  const config = {
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          jar: this.cookieJar,
+          withCredentials: true
+      };
+  try {
+      const res = await axios.post(url, qs.stringify(data), config);
+      this.log.info('Login Successful');
+      const getWebToken = await axios.get('http://' + this.hostname + '/index.php?op=config#light-val', config);
+      const $ = cheerio.load(getWebToken.data)
+      this.webtoken = $('#webtoken').val();
+      this.log.info('Webtoken Identified');
+  } catch (err) {
+      console.error(err);
+  }
   }
 
   async turnLightOn () {
-  	const config = {
+    const config = {
         jar: this.cookieJar,
         withCredentials: true
     };
-  	try {
-  		if (this.debug) { this.log.info("Attempting to turn on Light.")}
-  		const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
-  		if (this.debug) { this.log.info(res.data)};
-  		if (res.data == 1) {
-  			this.log.info('Light Turned On')	
-  		} else if (res.data == "Restricted Access") {
-  			this.login().then(() => 
-  				{ 
-  					if (this.debug) { this.log.info("Login Token Expired. Refreshing Token.")}
-  					this.turnLightOn();
-  				});
-  		} else {
-  			this.log.info('Error: Light did not respond')
-  		}
-	    } catch (err) {
-	    	console.error(err);
-	    }
+    try {
+      if (this.debug) { this.log.info("Attempting to turn on Light.")}
+      const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
+      if (this.debug) { this.log.info(res.data)};
+      if (res.data == 1) {
+        this.log.info('Light Turned On')  
+      } else if (res.data == "Restricted Access") {
+        this.login().then(() => 
+          { 
+            if (this.debug) { this.log.info("Login Token Expired. Refreshing Token.")}
+            this.turnLightOn();
+          });
+      } else {
+        this.log.info('Error: Light did not respond')
+      }
+      } catch (err) {
+        console.error(err);
+      }
   }
 
    async turnLightOff () {
-  	const config = {
+    const config = {
         jar: this.cookieJar,
         withCredentials: true
     };
-  	try {
-  		if (this.debug) { this.log.info("Attempting to turn off Light.")}
-  		const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
-  		if (this.debug) { this.log.info(res.data)};
-  		if (res.data == 0) {
-  			this.log.info('Light Turned Off')	
-  		} else if (res.data == "Restricted Access") {
-  			this.login().then(() => 
-  				{ 
-  					if (this.debug) { this.log.info("Login Token Expired. Refreshing Token.")}
-  					this.turnLightOff();
-  				});
-  		} else {
-  			this.log.info('Error: Light did not respond')
-  		}
-	    } catch (err) {
-	    	console.error(err);
-	    }
+    try {
+      if (this.debug) { this.log.info("Attempting to turn off Light.")}
+      const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
+      if (this.debug) { this.log.info(res.data)};
+      if (res.data == 0) {
+        this.log.info('Light Turned Off')  
+      } else if (res.data == "Restricted Access") {
+        this.login().then(() => 
+          { 
+            if (this.debug) { this.log.info("Login Token Expired. Refreshing Token.")}
+            this.turnLightOff();
+          });
+      } else {
+        this.log.info('Error: Light did not respond')
+      }
+      } catch (err) {
+        console.error(err);
+      }
   }
 
   /*
