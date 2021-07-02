@@ -138,7 +138,7 @@ class iSmartGateLight implements AccessoryPlugin {
     try {
       if (this.debug) { this.log.info("Attempting to turn on Light.")}
       const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=0&webtoken='+this.webtoken, config);
-      if (this.debug) { this.log.info(res.data)};
+      if (this.debug) { this.log.info(res.data)}
       if (res.data == 1) {
         this.log.info('Light Turned On')  
       } else if (res.data == "Restricted Access") {
@@ -163,7 +163,7 @@ class iSmartGateLight implements AccessoryPlugin {
     try {
       if (this.debug) { this.log.info("Attempting to turn off Light.")}
       const res = await axios.get('http://' + this.hostname + '/isg/light.php?op=activate&light=1&webtoken='+this.webtoken, config);
-      if (this.debug) { this.log.info(res.data)};
+      if (this.debug) { this.log.info(res.data)}
       if (res.data == 0) {
         this.log.info('Light Turned Off')  
       } else if (res.data == "Restricted Access") {
